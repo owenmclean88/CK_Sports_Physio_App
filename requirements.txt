@@ -1,5 +1,7 @@
-streamlit
-pandas
-Pillow
-fpdf
-numpy
+streamlit==1.12.2
+pandas==1.4.3
+Pillow==9.2.0
+fpdf==1.7.2
+numpy==1.22.4
+datetime
+json

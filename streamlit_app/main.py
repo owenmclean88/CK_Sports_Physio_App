@@ -44,48 +44,41 @@ def _show_dashboard():
     st.title("Prescription Calendar")
 
     conn = get_client_db()
-    total_clients = conn.execute(
-        "SELECT COUNT(*) FROM clients WHERE status='active'"
-    ).fetchone()[0]
-
-    programs = list((Path(__file__).parent / "patient_pdfs").rglob("*.json"))
-    total_programs = len(programs)
+    total_clients   = conn.execute("SELECT COUNT(*) FROM clients WHERE status='active'").fetchone()[0]
+    programs        = list((Path(__file__).parent / "patient_pdfs").rglob("*.json"))
+    total_programs  = len(programs)
     total_exercises = len(load_data())
 
-    # where your icons live
-    images_dir = Path(__file__).parent / "images"
-    client_icon   = images_dir / "group.png"
-    program_icon  = images_dir / "plus-circle.png"
-    exercise_icon = images_dir / "database.png"
+    images_dir      = Path(__file__).parent / "images"
+    icons = {
+        "clients":   images_dir / "group.png",
+        "programs":  images_dir / "plus-circle.png",
+        "exercises": images_dir / "database.png",
+    }
 
-    # three columns: each shows an icon above the metric
+    # build three columns
     c1, c2, c3 = st.columns(3)
 
-    with c1:
-        if client_icon.exists():
-            b64 = get_base64_image(client_icon)
-            st.image(f"data:image/png;base64,{b64}", width=50)
-        st.metric(label="Total Clients", value=total_clients)
+    # helper to render icon + metric in one row
+    def render_kpi(col, icon_path, label, value):
+        # two sub‐columns: icon (small) | metric (big)
+        i_col, m_col = col.columns([1, 4])
+        if icon_path.exists():
+            b64 = get_base64_image(icon_path)
+            i_col.image(f"data:image/png;base64,{b64}", width=60)
+        m_col.metric(label=label, value=value)
 
-    with c2:
-        if program_icon.exists():
-            b64 = get_base64_image(program_icon)
-            st.image(f"data:image/png;base64,{b64}", width=50)
-        st.metric(label="Total Programs", value=total_programs)
+    render_kpi(c1, icons["clients"],   "Total Clients",   total_clients)
+    render_kpi(c2, icons["programs"],  "Total Programs",  total_programs)
+    render_kpi(c3, icons["exercises"], "Total Exercises", total_exercises)
 
-    with c3:
-        if exercise_icon.exists():
-            b64 = get_base64_image(exercise_icon)
-            st.image(f"data:image/png;base64,{b64}", width=50)
-        st.metric(label="Total Exercises", value=total_exercises)
-
-    # build calendar events
+    # now the calendar...
     events = []
     colour_map = {"Rehab":"#FF9999","Prehab":"#99FF99","Recovery":"#9999FF"}
     for p in programs:
-        data = json.loads(p.read_text())
-        dt  = data["prescription_date"]
-        typ = data["rehab_type"]
+        data  = json.loads(p.read_text())
+        dt    = data["prescription_date"]
+        typ   = data["rehab_type"]
         title = f"{data['firstname']} {data['lastname']} – {typ}"
         events.append({
             "title": title,
@@ -93,8 +86,8 @@ def _show_dashboard():
             "color": colour_map.get(typ, "#CCCCCC")
         })
 
-    st.markdown("### Prescription Calendar")
     calendar(events=events, key="prog_cal")
+
 
 if __name__ == "__main__":
     st.error("Please run via index.py, not directly.")

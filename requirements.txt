@@ -1,5 +1,17 @@
-streamlit==1.45.1
-pandas==1.4.3
-Pillow==9.2.0
-fpdf==1.7.2
-numpy
+# Core framework
+streamlit>=1.45.1
+
+# Data handling
+pandas>=2.0
+
+# PDF generation
+fpdf>=1.7.2
+
+# Calendar component
+streamlit-calendar>=0.1.3
+
+# Image support (if you embed or manipulate images)
+Pillow>=9.5
+
+# Utilities (if you use any of these elsewhere)
+numpy>=1.23

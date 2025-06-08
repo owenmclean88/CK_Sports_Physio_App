@@ -1,8 +1,10 @@
 # streamlit_app/_common.py
 
 import streamlit as st
-import base64
+import base64 # <--- KEPT THIS IMPORT
 from pathlib import Path
+
+# NOTE: No import for get_base64_image from utils, as it's defined in this file.
 
 def apply_global_css():
     st.markdown(
@@ -69,8 +71,7 @@ def apply_global_css():
             padding-top: 0.85rem !important;
         }
 
-        /* ============ CALENDAR NAV BUTTONS ============ */
-        /* Target all fc buttons, and specifically the “primary” ones */
+        /* CALENDAR NAV BUTTONS */
         .fc .fc-button,
         .fc .fc-button.fc-button-primary {
           background-color: var(--primary-color) !important;
@@ -87,21 +88,28 @@ def apply_global_css():
         .fc .fc-button.fc-button-disabled {
           opacity: 0.5 !important;
         }
-
         </style>
         """,
         unsafe_allow_html=True,
     )
 
+# KEPT THIS FUNCTION HERE as requested
 def get_base64_image(image_path: Path) -> str:
     """
     Read a local image file and return its base64‐encoded string for embedding.
     """
     img_path = Path(image_path)
     if not img_path.exists():
-        raise FileNotFoundError(f"Image not found: {img_path}")
-    data = img_path.read_bytes()
-    return base64.b64encode(data).decode()
+        # Changed to return a placeholder rather than raising error for robustness
+        # This will prevent the app from crashing if an image is missing
+        return base64.b64encode(b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=").decode("utf-8")
+    try:
+        data = img_path.read_bytes()
+        return base64.b64encode(data).decode()
+    except Exception as e:
+        st.error(f"Error encoding image {image_path}: {e}")
+        return base64.b64encode(b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=").decode("utf-8")
+
 
 def page_header(title: str, icon_path: Path = None):
     """
@@ -111,17 +119,25 @@ def page_header(title: str, icon_path: Path = None):
     """
     root = Path(__file__).parent  # streamlit_app/
     logo_file = root / "images" / "company_logo4.png"
-    logo_b64 = get_base64_image(logo_file) if logo_file.exists() else ""
+    logo_b64 = get_base64_image(logo_file) # Calls the get_base64_image from THIS file
+    
+    # Handle missing logo gracefully
+    if not logo_file.exists():
+        st.warning(f"Company logo not found at: {logo_file}. Using placeholder.")
+
 
     icon_html = ""
     if icon_path:
         ip = Path(icon_path)
         if ip.exists():
-            icon_b64 = get_base64_image(ip)
+            icon_b64 = get_base64_image(ip) # Calls the get_base64_image from THIS file
             icon_html = (
                 f'<img src="data:image/png;base64,{icon_b64}" '
                 f'style="width:50px; margin-right:10px;" />'
             )
+        else:
+            st.warning(f"Header icon not found at: {ip}")
+
 
     st.markdown(
         f"""
@@ -144,9 +160,9 @@ def get_status_color(status: str) -> str:
     Used on your Client Status page.
     """
     mapping = {
-        "Full Training":     "#28a745",  # green
-        "Modified Training": "#ffc107",  # amber
-        "Rehab":             "#17a2b8",  # teal
-        "No Training":       "#dc3545",  # red
+        "Full Training":     "#28a745",   # green
+        "Modified Training": "#ffc107",   # amber
+        "Rehab":             "#17a2b8",   # teal
+        "No Training":       "#dc3545",   # red
     }
-    return mapping.get(status, "#777777")  # default grey
+    return mapping.get(status, "#777777")   # default grey

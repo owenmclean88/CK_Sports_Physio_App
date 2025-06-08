@@ -1,0 +1,19 @@
+{
+    "firstname": "Test",
+    "lastname": "Athlete",
+    "rehab_type": "Test Event",
+    "prescription_date": "2025-06-08",
+    "exercises": [
+        {
+            "body_part": "Hip",
+            "movement_type": "Glut max",
+            "sub_movement_type": "Posterior oblique sling",
+            "position": "4 point kneel",
+            "exercise": "Arabesque plus Windmill",
+            "volume": "2 x 15 daily",
+            "notes": "exercise notes",
+            "progressions": ""
+        }
+    ],
+    "extra_comments": "Testing session notes"
+}

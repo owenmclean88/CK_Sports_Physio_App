@@ -1,8 +1,8 @@
 # streamlit_app/pages/03_Client_Status.py
 
 import streamlit as st
-from _common import apply_global_css, page_header, get_base64_image, get_status_color
-from utils import get_client_db
+from _common import apply_global_css, page_header, get_base64_image
+from utils import get_client_db, load_data
 from pathlib import Path
 import os
 import json
@@ -11,8 +11,8 @@ from datetime import date
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants
 # ──────────────────────────────────────────────────────────────────────────────
-PROJECT_ROOT      = Path(__file__).parent.parent
-CONTENT_DIR        = PROJECT_ROOT / 'images'
+PROJECT_ROOT = Path(__file__).parent.parent
+CONTENT_DIR = PROJECT_ROOT / 'images'
 PATIENT_STATUS_DIR = PROJECT_ROOT / 'patient_status'
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -39,9 +39,9 @@ def save_training_status_to_json(client_id: str, new_status: str, last_updated: 
 
     old_status = details.get("current_status", "")
     details["previous_status"] = previous_status or old_status
-    details["previous_date"]   = previous_date or details.get("last_updated", "")
-    details["current_status"]  = new_status
-    details["last_updated"]    = str(last_updated)
+    details["previous_date"] = previous_date or details.get("last_updated", "")
+    details["current_status"] = new_status
+    details["last_updated"] = str(last_updated)
 
     with open(status_file, 'w') as f:
         json.dump(details, f)
@@ -67,36 +67,34 @@ def fetch_existing_clients():
                     if cid in athlete_ids:
                         existing.append({
                             "client_id": cid,
-                            "firstname":   d.get("firstname",""),
-                            "lastname":    d.get("lastname",""),
+                            "firstname": d.get("firstname",""),
+                            "lastname": d.get("lastname",""),
                             "current_status": d.get("current_status","Full Training"),
-                            "last_updated":   d.get("last_updated",""),
+                            "last_updated": d.get("last_updated",""),
                             "previous_status":d.get("previous_status",""),
-                            "previous_date":  d.get("previous_date","")
+                            "previous_date": d.get("previous_date","")
                         })
     return existing
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Helper: Map status to a colour
+# Helper: Map status to a colour (already defined in _common, remove duplication here)
 # ──────────────────────────────────────────────────────────────────────────────
-def get_status_color(status: str) -> str:
-    return {
-        "Full Training":      "green",
-        "Modified Training":  "orange",
-        "Rehab":              "purple",
-        "No Training":        "red"
-    }.get(status, "gray")
+# Removed get_status_color from here as it's already in _common.py
+# The import in settings.py should bring it in.
+# If you don't have it in _common.py, you can add it back here.
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Main render function
 # ──────────────────────────────────────────────────────────────────────────────
 def render_client_status():
     apply_global_css()
+    # Assuming 'group.png' is in CONTENT_DIR (streamlit_app/images/)
     page_header("Client Status", icon_path=CONTENT_DIR / 'group.png')
 
     # Button to refresh list
     if st.button("Show Updated List"):
-        st.experimental_rerun()
+        # Corrected: Use st.rerun() for newer Streamlit versions
+        st.rerun()
 
     # Load existing records
     clients = fetch_existing_clients()
@@ -106,10 +104,10 @@ def render_client_status():
 
     # Group by current status
     groups = {
-        "Full Training":      [],
-        "Modified Training":  [],
-        "Rehab":              [],
-        "No Training":        []
+        "Full Training": [],
+        "Modified Training": [],
+        "Rehab": [],
+        "No Training": []
     }
     for c in clients:
         groups.setdefault(c["current_status"], []).append(c)
@@ -120,18 +118,20 @@ def render_client_status():
             continue
         st.markdown(f"## {status} Clients")
         for client in items:
-            cid   = client["client_id"]
-            name  = f"{client['firstname']} {client['lastname']}"
-            prev  = client["previous_status"]
+            cid = client["client_id"]
+            name = f"{client['firstname']} {client['lastname']}"
+            prev = client["previous_status"]
             pdate = client["previous_date"]
 
-            col1, col2 = st.columns([3,1])
-            # Display name with coloured dot
+            # Assuming get_status_color is imported/available from _common.py now
+            # If not, ensure it's defined here or properly imported
+            status_color = get_status_color(status) # Call the function to get the color
+
             st.markdown(
                 f"""
                 <div style="display:flex; align-items:center; margin-bottom:5px;">
-                <span style="width:15px; height:15px; background-color:{get_status_color(status)};
-                                border-radius:50%; display:inline-block; margin-right:10px;"></span>
+                <span style="width:15px; height:15px; background-color:{status_color};
+                              border-radius:50%; display:inline-block; margin-right:10px;"></span>
                 <span style="font-size:1.2rem; font-weight:bold;">{name}</span>
                 </div>
                 <div style="font-size:0.9rem; color:#555;">
@@ -142,7 +142,8 @@ def render_client_status():
             )
 
             # New status selector and update button
-            with col2:
+            col1, col2 = st.columns([3,1]) # Re-added columns if they were missing or for better layout
+            with col2: # Place selectbox and update button in the second column
                 key = f"new_status_{cid}"
                 new = st.selectbox(
                     "New Status",

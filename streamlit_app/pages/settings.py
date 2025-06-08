@@ -1,12 +1,13 @@
-# streamlit_app/settings.py
+# streamlit_app/pages/settings.py
 
 import os
 from pathlib import Path
+import shutil # Import shutil for file operations
 
 import streamlit as st
-from _common      import apply_global_css, page_header, get_base64_image
-from utils        import get_client_db
-from datetime     import date
+from _common import apply_global_css, page_header, get_base64_image
+from utils   import get_client_db, load_data
+from datetime    import date, datetime # Import datetime for timestamping
 import pandas as pd
 import json
 
@@ -14,15 +15,19 @@ import json
 # Paths & Icons
 # ──────────────────────────────────────────────────────────────────────────────
 PROJECT_ROOT       = Path(__file__).parent
-BASE_DIR           = PROJECT_ROOT.parent         # your streamlit_app/ parent
+BASE_DIR           = PROJECT_ROOT.parent      # your streamlit_app/ parent
 PDF_DIR            = BASE_DIR / 'patient_pdfs'
 CONTENT_DIR        = BASE_DIR / 'images'
-USER_GROUPS_DB     = BASE_DIR / 'user_groups.db'
+USER_GROUPS_DB     = BASE_DIR / 'user_groups.db' # This variable defines the path
 PATIENT_STATUS_DIR = BASE_DIR / 'patient_status'
 SETTINGS_ICON      = CONTENT_DIR / 'settings.png'
 
+# New: Define backup directory
+BACKUP_DIR         = BASE_DIR / 'db_backups'
+
+
 # ──────────────────────────────────────────────────────────────────────────────
-# Database helpers
+# Database helpers (rest of these functions remain the same)
 # ──────────────────────────────────────────────────────────────────────────────
 def generate_client_id(conn):
     import random
@@ -60,7 +65,7 @@ def fetch_user_groups(conn):
                GROUP_CONCAT(DISTINCT CASE WHEN gm.role='Athlete' THEN c.first_name||' '||c.last_name END) AS athletes
         FROM user_groups g
         LEFT JOIN group_members gm ON g.group_id=gm.group_id
-        LEFT JOIN clients c      ON gm.member_id=c.id
+        LEFT JOIN clients c        ON gm.member_id=c.id
         GROUP BY g.group_id, g.group_name
     """)
     rows = cur.fetchall()
@@ -105,6 +110,37 @@ def update_user_group(conn, gid, name, coaches, athletes):
         )
     conn.commit()
 
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Backup function
+# ──────────────────────────────────────────────────────────────────────────────
+def create_database_backup():
+    """Creates a timestamped backup of client_database.db."""
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True) # Ensure backup directory exists
+    
+    # Get the path to the main database file from utils.py
+    # We need to re-import it or define it here, let's redefine it for clarity
+    # within the context of this page. It assumes client_database.db is in BASE_DIR.
+    db_path = BASE_DIR / 'client_database.db'
+
+    if not db_path.exists():
+        st.error("Cannot create backup: client_database.db not found.")
+        return None, None
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_filename = f"client_database_{timestamp}.db"
+    backup_path = BACKUP_DIR / backup_filename
+
+    try:
+        # Use shutil.copy2 to copy the file and preserve metadata
+        shutil.copy2(db_path, backup_path)
+        st.success(f"Database backup created: {backup_filename}")
+        return backup_path, backup_filename
+    except Exception as e:
+        st.error(f"Error creating backup: {e}")
+        return None, None
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Main renderer
 # ──────────────────────────────────────────────────────────────────────────────
@@ -112,7 +148,7 @@ def render_settings():
     apply_global_css()
     page_header("Settings", icon_path=SETTINGS_ICON)
 
-    conn   = get_client_db(USER_GROUPS_DB)
+    conn   = get_client_db()
     cursor = conn.cursor()
 
     # --- Add New User ---
@@ -164,26 +200,26 @@ def render_settings():
     opts = [""] + [f"{c[2]}_{c[3]}_{c[0]}" for c in all_clients]
     sel  = st.selectbox("Select User to Edit", opts, key="edit_user_select")
     if sel:
-        uid  = sel.split("_")[-1]
+        uid    = sel.split("_")[-1]
         user = next(c for c in all_clients if c[0]==uid)
         e1,e2,e3,e4 = st.columns([0.3,0.3,0.3,0.1])
         etype  = e1.radio("Account Type", ["Athlete","Coach","Admin"],
                           index=["Athlete","Coach","Admin"].index(user[1]),
                           horizontal=True, key="edit_type")
-        efn    = e2.text_input("First Name",  value=user[2], key="edit_fn")
-        eln    = e3.text_input("Last Name",   value=user[3], key="edit_ln")
+        efn    = e2.text_input("First Name",    value=user[2], key="edit_fn")
+        eln    = e3.text_input("Last Name",     value=user[3], key="edit_ln")
         estatus= e4.checkbox("Active", value=(user[7]=="active"), key="edit_status")
         mcol, ecol, pcol = st.columns(3)
-        emobile = mcol.text_input("Mobile",  value=user[4], key="edit_mobile")
-        eemail  = ecol.text_input("Email",   value=user[5], key="edit_email")
+        emobile = mcol.text_input("Mobile",    value=user[4], key="edit_mobile")
+        eemail  = ecol.text_input("Email",     value=user[5], key="edit_email")
         epwd    = pcol.text_input("Password",value=user[6], type="password", key="edit_pwd")
 
         if st.button("Update User", key="update_user_btn"):
             cursor.execute("""
                 UPDATE clients
-                   SET account_type=?, first_name=?, last_name=?,
-                       mobile=?, email=?, password=?, status=?
-                 WHERE id=?
+                    SET account_type=?, first_name=?, last_name=?,
+                        mobile=?, email=?, password=?, status=?
+                    WHERE id=?
             """, (
                 etype, efn, eln, emobile, eemail, epwd,
                 "active" if estatus else "deactivated",
@@ -199,7 +235,7 @@ def render_settings():
     group_name   = st.text_input("Group Name", key="grp_name")
     coach_list   = [f"{c[1]} {c[2]} (ID: {c[0]})" for c in fetch_coaches(conn)]
     athlete_list = [f"{a[1]} {a[2]} (ID: {a[0]})" for a in fetch_athletes(conn)]
-    sel_coaches  = st.multiselect("Assign Coaches",  coach_list,   key="grp_coaches")
+    sel_coaches  = st.multiselect("Assign Coaches",   coach_list,    key="grp_coaches")
     sel_athletes = st.multiselect("Assign Athletes", athlete_list, key="grp_athletes")
 
     if st.button("Add User Group", key="add_grp_btn"):
@@ -219,8 +255,8 @@ def render_settings():
     opts = [""] + [f"{int(r['Group ID'])} - {r['Group Name']}" for _,r in df_groups.iterrows()]
     selg = st.selectbox("Select Group to Edit", opts, key="edit_grp_select")
     if selg:
-        gid  = int(selg.split(" - ")[0])
-        row  = df_groups[df_groups["Group ID"]==gid].iloc[0]
+        gid    = int(selg.split(" - ")[0])
+        row    = df_groups[df_groups["Group ID"]==gid].iloc[0]
         new_name = st.text_input("Group Name", value=row["Group Name"], key="edit_grp_name")
 
         def text_to_ids(txt):
@@ -235,12 +271,30 @@ def render_settings():
                 if int(item.split(" (ID: ")[1][:-1]) in chosen
             ]
 
-        default_coaches  = find_defaults(coach_list,  row["Coaches"])
+        default_coaches    = find_defaults(coach_list,   row["Coaches"])
         default_athletes = find_defaults(athlete_list,row["Clients"])
 
-        edit_coaches  = st.multiselect("Assign Coaches",  coach_list,   default=default_coaches,  key="edit_grp_coaches")
-        edit_athletes = st.multiselect("Assign Athletes",athlete_list, default=default_athletes, key="edit_grp_athletes")
+        edit_coaches   = st.multiselect("Assign Coaches",   coach_list,    default=default_coaches,   key="edit_grp_coaches")
+        edit_athletes  = st.multiselect("Assign Athletes",athlete_list, default=default_athletes, key="edit_grp_athletes")
 
         if st.button("Update User Group", key="update_grp_btn"):
             update_user_group(conn, gid, new_name, edit_coaches, edit_athletes)
             st.success(f"User group '{new_name}' updated successfully!")
+            
+    st.markdown("---")
+
+    # ─── Database Backup Section ───────────────────────────────────────────
+    st.write("### Database Backup")
+    st.info("Creating a backup copies the entire database file to a 'db_backups' folder.")
+    if st.button("Create Database Backup", key="create_db_backup_btn"):
+        backup_file_path, backup_file_name = create_database_backup()
+        if backup_file_path:
+            with open(backup_file_path, "rb") as f:
+                st.download_button(
+                    label="Download Backup File",
+                    data=f.read(),
+                    file_name=backup_file_name,
+                    mime="application/x-sqlite3", # Standard MIME type for SQLite
+                    key="download_db_backup"
+                )
+            st.success(f"Backup available for download: {backup_file_name}")

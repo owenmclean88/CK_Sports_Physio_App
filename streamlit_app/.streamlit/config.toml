@@ -1,7 +1,7 @@
 [theme]
 primaryColor = "#2878F3"            # your sidebar & calendar‐button blue
-backgroundColor = "#2D2D2D"
-secondaryBackgroundColor = "#3B3B3B"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#262730"
 textColor = "#FAFAFA"
 font = "sans serif"
 

@@ -74,16 +74,19 @@ def _show_dashboard():
 
     # now the calendar...
     events = []
-    colour_map = {"Rehab":"#FF9999","Prehab":"#99FF99","Recovery":"#9999FF"}
+    colour_map = {"Rehab":"#FF9999", "Prehab":"#99FF99", "Recovery":"#9999FF"}
+
     for p in programs:
         data  = json.loads(p.read_text())
         dt    = data["prescription_date"]
         typ   = data["rehab_type"]
         title = f"{data['firstname']} {data['lastname']} – {typ}"
         events.append({
-            "title": title,
-            "start": dt, "end": dt,
-            "color": colour_map.get(typ, "#CCCCCC")
+            "title":           title,
+            "start":           dt,
+            "end":             dt,
+            "Color": colour_map.get(typ, "#CCCCCC"),
+            "textColor":       "#FFFFFF",
         })
 
     calendar(events=events, key="prog_cal")

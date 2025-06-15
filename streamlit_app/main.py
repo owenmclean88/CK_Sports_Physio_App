@@ -13,6 +13,7 @@ from pages.client_status     import render_client_status
 from pages.client_history    import render_client_history
 from pages.exercise_database import render_exercise_database
 from pages.settings          import render_settings
+from pages.injury_audit      import render_injury_audit
 
 def main_app(page: str):
     apply_global_css()
@@ -35,6 +36,8 @@ def main_app(page: str):
         render_client_history()
     elif page == "Exercise Database":
         render_exercise_database()
+    elif page == "Injury Audit":
+        render_injury_audit()
     elif page == "Settings":
         render_settings()
     else:

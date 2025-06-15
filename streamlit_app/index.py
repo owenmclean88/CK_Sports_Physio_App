@@ -64,6 +64,7 @@ PAGES = [
     "Client Status",
     "Client History",
     "Exercise Database",
+    "Injury Audit",
     "Settings",
 ]
 

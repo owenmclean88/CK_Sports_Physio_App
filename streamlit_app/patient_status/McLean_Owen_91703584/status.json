@@ -4,5 +4,17 @@
   "client_id": "91703584",
   "current_status": "Modified Training",
   "restrictions": "",
-  "last_updated": "2025-06-28"
+  "last_updated": "2025-06-22",
+  "history": [
+    {
+      "status": "Full Training",
+      "date": "2025-06-28",
+      "comment": ""
+    },
+    {
+      "status": "Modified Training",
+      "date": "2025-06-22",
+      "comment": ""
+    }
+  ]
 }

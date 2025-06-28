@@ -1,0 +1,20 @@
+{
+  "firstname": "Thomas",
+  "lastname": "Grant",
+  "client_id": "13894132",
+  "current_status": "No Training",
+  "restrictions": "Injured",
+  "last_updated": "2025-06-26",
+  "history": [
+    {
+      "status": "Modified Training",
+      "date": "2025-06-01",
+      "comment": ""
+    },
+    {
+      "status": "No Training",
+      "date": "2025-06-26",
+      "comment": "Injured"
+    }
+  ]
+}

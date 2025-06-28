@@ -1,0 +1,20 @@
+{
+  "firstname": "Carlos",
+  "lastname": "Lai",
+  "client_id": "12263293",
+  "current_status": "No Training",
+  "restrictions": "Ankle Injury",
+  "last_updated": "2025-06-28",
+  "history": [
+    {
+      "status": "Full Training",
+      "date": "2025-06-28",
+      "comment": ""
+    },
+    {
+      "status": "No Training",
+      "date": "2025-06-28",
+      "comment": "Ankle Injury"
+    }
+  ]
+}

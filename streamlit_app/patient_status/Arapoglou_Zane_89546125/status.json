@@ -1,0 +1,20 @@
+{
+  "firstname": "Zane",
+  "lastname": "Arapoglou",
+  "client_id": "89546125",
+  "current_status": "Modified Training",
+  "restrictions": "Low ankle mobility",
+  "last_updated": "2025-06-22",
+  "history": [
+    {
+      "status": "Rehab",
+      "date": "2025-06-01",
+      "comment": ""
+    },
+    {
+      "status": "Modified Training",
+      "date": "2025-06-22",
+      "comment": "Low ankle mobility"
+    }
+  ]
+}

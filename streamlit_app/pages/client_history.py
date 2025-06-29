@@ -1,7 +1,7 @@
 # streamlit_app/pages/04_Client_History.py
 
 import streamlit as st
-from _common import apply_global_css, page_header
+from streamlit_app._common import apply_global_css, page_header
 from pathlib import Path
 import os
 import json

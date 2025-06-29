@@ -7,8 +7,8 @@ import os
 from datetime import date
 from pathlib import Path
 
-from _common import apply_global_css, page_header, get_base64_image
-from utils   import get_client_db, load_data
+from streamlit_app._common import apply_global_css, page_header, get_base64_image
+from streamlit_app.utils import get_client_db, load_data
 
 # ─── Paths & Constants ─────────────────────────────────────────────────────────
 # ROOT now points to the 'streamlit_app' directory,

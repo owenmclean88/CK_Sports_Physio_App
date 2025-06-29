@@ -8,7 +8,7 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 
-from utils import (
+from streamlit_app.utils import (
     get_client_db,
     generate_client_id,
     generate_username,
@@ -21,7 +21,7 @@ from utils import (
     delete_group_row,
     delete_client,            # if implemented in utils; otherwise deletion is inline
 )
-from _common import apply_global_css, page_header, get_base64_image
+from streamlit_app._common import apply_global_css, page_header, get_base64_image
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Paths & Icons

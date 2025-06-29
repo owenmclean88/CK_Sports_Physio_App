@@ -5,12 +5,11 @@ from pathlib import Path
 import json
 from datetime import datetime, date
 
-from _common import apply_global_css, page_header
-from utils import get_client_db, fetch_all_groups, fetch_user_groups
+from streamlit_app._common import apply_global_css, page_header
+from streamlit_app.utils   import get_client_db, fetch_all_groups, fetch_user_groups
 
-# Path to patient_status folder
+# path for status JSON files
 PATIENT_STATUS_DIR = Path(__file__).parent.parent / "patient_status"
-
 
 def render_client_status():
     apply_global_css()

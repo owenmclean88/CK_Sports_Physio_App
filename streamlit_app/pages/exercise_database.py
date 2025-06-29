@@ -1,8 +1,8 @@
 # streamlit_app/pages/05_Exercise_Database.py
 
 import streamlit as st
-from _common import apply_global_css, page_header, get_base64_image
-from utils import get_client_db
+from streamlit_app._common import apply_global_css, page_header, get_base64_image
+from streamlit_app.utils import get_client_db
 from pathlib import Path
 import pandas as pd
 import os

@@ -6,8 +6,8 @@ from pathlib import Path
 from datetime import date
 import json
 
-from _common           import apply_global_css, page_header
-from utils             import get_client_db, load_data
+from streamlit_app._common import apply_global_css, page_header
+from streamlit_app.utils import get_client_db, load_data
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Paths & Constants

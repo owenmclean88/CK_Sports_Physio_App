@@ -18,3 +18,9 @@ numpy>=1.23
 
 # For charting in Injury Audit page
 plotly>=5.0
+
+#PDF Reports
+reportlab
+
+# PDF generation
+fpdf2

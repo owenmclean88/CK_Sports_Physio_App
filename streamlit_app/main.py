@@ -1,5 +1,9 @@
 # streamlit_app/main.py
 
+import os, sys
+# ensure project root is on PYTHONPATH so package imports work
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 import json
 from pathlib import Path

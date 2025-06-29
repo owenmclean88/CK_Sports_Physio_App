@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import plotly.express as px # Import Plotly for charting
 
-from _common import apply_global_css, page_header # Import common UI elements
+from streamlit_app._common import apply_global_css, page_header
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Paths & Constants

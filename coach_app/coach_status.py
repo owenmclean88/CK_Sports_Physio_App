@@ -55,7 +55,7 @@ def build_pdf_by_status(logo_path: Path, heading: str, subheading: str,
         pdf.set_font("Arial", "", 12)
         for e in entries:
             pdf.cell(40, 8, e["name"], border=1)
-            pdf.multi_cell(0, 8, e["comms"], border=1)
+            pdf.multi_cell(150, 8, e["comms"], border=1)
         pdf.ln(4)
 
     return pdf.output(dest="S").encode("latin1")

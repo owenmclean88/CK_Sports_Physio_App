@@ -58,8 +58,13 @@ def build_pdf_by_status(logo_path: Path, heading: str, subheading: str,
             pdf.multi_cell(150, 8, e["comms"], border=1)
         pdf.ln(4)
 
-    # pdf.output(dest="S") returns a bytearray under fpdf2, so just convert to bytes
-    return bytes(pdf.output(dest="S"))
+        raw = pdf.output(dest="S")
+        if isinstance(raw, str):
+            # PyFPDF returned a str → encode to latin1
+            return raw.encode("latin1")
+        else:
+            # fpdf2 returned a bytearray → just wrap in bytes
+            return bytes(raw)
 
 def render_coach_status(coach_id: int):
     apply_global_css()

@@ -58,8 +58,8 @@ def build_pdf_by_status(logo_path: Path, heading: str, subheading: str,
             pdf.multi_cell(150, 8, e["comms"], border=1)
         pdf.ln(4)
 
-    return pdf.output(dest="S").encode("latin1")
-
+    # pdf.output(dest="S") returns a bytearray under fpdf2, so just convert to bytes
+    return bytes(pdf.output(dest="S"))
 
 def render_coach_status(coach_id: int):
     apply_global_css()
